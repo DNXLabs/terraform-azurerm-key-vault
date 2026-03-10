@@ -11,12 +11,8 @@ locals {
   rg_name = var.resource_group.create ? azurerm_resource_group.this[0].name : data.azurerm_resource_group.existing[0].name
   rg_loc  = var.resource_group.create ? azurerm_resource_group.this[0].location : data.azurerm_resource_group.existing[0].location
 
-  # Key Vault name: alphanumeric only (Azure limits are strict), 3-24 characters
-  base_kv_name_raw = "kv${local.prefix}${try(var.key_vault.name_suffix, "001")}"
-  base_kv_name_tmp = substr(replace(lower(local.base_kv_name_raw), "/[^0-9a-z]/", ""), 0, 24)
-  base_kv_name     = local.base_kv_name_tmp
-
-  key_vault_name = coalesce(try(var.key_vault.name, null), local.base_kv_name)
+  # Key Vault name: alphanumeric only, 3-24 characters
+  key_vault_name = substr(replace(lower(var.name), "/[^0-9a-z]/", ""), 0, 24)
 
   # Access model
   use_rbac         = lower(try(var.access.model, "rbac")) == "rbac"
@@ -42,9 +38,9 @@ locals {
   pe_services_enabled = local.private_enabled ? {
     for k, enabled in try(var.private.endpoints, {}) :
     k => merge(local.pe_catalog[k], {
-      pe_name  = "pe-kv-${local.key_vault_name}"
-      psc_name = "psc-kv-${local.key_vault_name}"
-      nic_name = "nic-pe-kv-${local.key_vault_name}"
+      pe_name  = "pe-${local.key_vault_name}"
+      psc_name = "psc-${local.key_vault_name}"
+      nic_name = "nic-${local.key_vault_name}"
     })
     if enabled && contains(keys(local.pe_catalog), k)
   } : {}
