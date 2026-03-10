@@ -33,7 +33,6 @@ variable "key_vault" {
   description = "Azure Key Vault configuration."
   type = object({
     name        = optional(string)
-    name_suffix = optional(string, "001")
 
     sku_name = optional(string, "standard") # standard | premium
 
